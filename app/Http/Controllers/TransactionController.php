@@ -41,7 +41,11 @@ class TransactionController extends Controller
         $recipient = User::where(function ($q) use ($request) {
             $q->where('email', $request->to_user)
                 ->orWhere('id', $request->to_user);
-        })->first();
+        })
+            ->whereHas('bankAccount', function ($q) {
+                $q->where('is_active', '1');
+            })
+            ->first();
 
         if (! $recipient || $recipient->id === $user->id) {
             return response()->json(['status' => 'error', 'message' => 'Destinatário inválido.']);
@@ -71,17 +75,17 @@ class TransactionController extends Controller
             DB::commit();
 
             Log::info('Transferência realizada', [
-                'from' => $user->id,
-                'to' => $recipient->id,
-                'amount' => $request->amount
+                'from'   => $user->id,
+                'to'     => $recipient->id,
+                'amount' => $request->amount,
             ]);
 
-            return response()->json(['status' => 'success', 'message' => 'Transferência realizada com sucesso.'],200);
+            return response()->json(['status' => 'success', 'message' => 'Transferência realizada com sucesso.'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao processar transferência', [
-                'error' => $e->getMessage(),
-                'user_id' => $user->id
+                'error'   => $e->getMessage(),
+                'user_id' => $user->id,
             ]);
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
@@ -134,7 +138,7 @@ class TransactionController extends Controller
 
             Log::info('Transação cancelada', [
                 'transaction_id' => $transaction->id,
-                'user_id' => $user->id
+                'user_id'        => $user->id,
             ]);
 
             $updatedBalance = auth()->user()->bankAccount->fresh()->balance;
@@ -143,13 +147,13 @@ class TransactionController extends Controller
                 'status'      => 'success',
                 'message'     => 'Transação cancelada com sucesso.',
                 'new_balance' => number_format($updatedBalance, 2, ',', '.'),
-            ],200);
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao cancelar transação', [
-                'error' => $e->getMessage(),
+                'error'          => $e->getMessage(),
                 'transaction_id' => $id,
-                'user_id' => $user->id
+                'user_id'        => $user->id,
             ]);
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
