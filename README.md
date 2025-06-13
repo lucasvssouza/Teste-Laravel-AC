@@ -30,37 +30,19 @@ cd nome-do-repo
 cp .env.example .env
 ```
 
-### 3. Subir containers com Docker
+### 3. Subir containers com Docker (WSL)
 
-```bash
-docker compose up -d --build
-```
-
-### 4. Instalar dependências do PHP
-```bash
-docker compose exec app composer install
-```
-
-### 5. Instalar dependências do front-end
-```bash
-docker compose exec app npm install
-```
-
-### 6. Gerar a chave da aplicação e rodar as migrations
-```bash
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --seed
-```
-
-### 7. Iniciar o Vite (frontend)
-```bash
-docker compose exec app npm run dev
+```wsl
+alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
+sail up -d
 ```
 
 ## 🧪 Testes
+
 ### Você pode rodar os testes dentro do container
+
 ```bash
-docker compose exec app php artisan test
+php artisan test
 ```
 
 ## 📂 Estrutura de Rotas
