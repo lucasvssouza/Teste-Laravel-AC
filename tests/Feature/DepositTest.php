@@ -16,7 +16,7 @@ class DepositTest extends TestCase
         $this->actingAs($user);
         BankAccount::create(['user_id' => $user->id, 'balance' => 0]);
 
-        $response = $this->post('/depositar', [
+        $response = $this->post('/deposito', [
             'amount'      => 100,
             'description' => 'Depósito inicial',
         ]);
@@ -25,7 +25,7 @@ class DepositTest extends TestCase
         $this->assertDatabaseHas('transactions', [
             'user_id' => $user->id,
             'amount'  => 100,
-            'type'    => 3,
+            'type'    => 2,
         ]);
     }
 }

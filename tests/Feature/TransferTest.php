@@ -16,23 +16,28 @@ class TransferTest extends TestCase
         $sender = User::factory()->create();
         $recipient = User::factory()->create();
 
-        BankAccount::create(['user_id' => $sender->id, 'balance' => 500]);
-        BankAccount::create(['user_id' => $recipient->id, 'balance' => 100]);
+        BankAccount::create(['user_id' => $sender->id, 'balance' => 1000]);
+        BankAccount::create(['user_id' => $recipient->id, 'balance' => 500]);
 
         $this->actingAs($sender);
 
-        $response = $this->post('/transferir', [
-            'to_user' => $recipient->email,
-            'amount' => 200,
+        $response = $this->post('/transferencia', [
+            'to_user'     => $recipient->email,
+            'amount'      => 200,
             'description' => 'Teste de transferência',
         ]);
 
-        $response->assertJson(['status' => 'success']);
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'status' => 'success',
+                     'message' => 'Transferência realizada com sucesso.',
+                 ]);
+
         $this->assertDatabaseHas('transactions', [
-            'user_id' => $sender->id,
+            'user_id'     => $sender->id,
             'receiver_id' => $recipient->id,
-            'amount' => 200,
-            'type' => 1,
+            'amount'      => 200,
+            'type'        => 1,
         ]);
     }
 }
